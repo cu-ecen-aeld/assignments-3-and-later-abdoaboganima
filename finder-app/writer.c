@@ -13,7 +13,7 @@
 
 int main(int argc, char *argv[])
 {
-  if(argc<3){
+  if(argc!=3){
     fprintf(stderr, ANSI_COLOR_RED"The arguments are less than expected.. USAGE: ./writer filename str\n"ANSI_COLOR_RESET);
     openlog(NULL, 0, LOG_USER);
     syslog(LOG_ERR, "Invalid Number of arguments: %d", argc);
