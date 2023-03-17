@@ -1,5 +1,10 @@
 #include "systemcalls.h"
-
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
 /**
  * @param cmd the command to execute with system()
  * @return true if the command in @param cmd was executed
@@ -16,8 +21,8 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+  
+  return system(cmd)==EXIT_SUCCESS? true: false;
 }
 
 /**
@@ -58,10 +63,29 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
-
+    int return_status=false;
+    int status=0;
+    pid_t pid=fork();
+    if(pid==-1)
+      return false;
+    else if(pid==0){
+      return_status= execv(command[0], command);
+      /*The child process will return 0 in case of the success execution*/
+      if(return_status==-1)
+	exit(EXIT_FAILURE);
+    }
     va_end(args);
 
-    return true;
+    waitpid(pid, &status, 0);
+
+    if(WIFEXITED(status))
+      return_status = WEXITSTATUS(status);
+
+    /*For success the return_status=EXIT_SUCCESS=0
+     *Since we need to return true, in case of EXIT_SUCCESS and vice versa,
+     *So we have to logical inverse of the return status 
+     */
+    return !return_status;
 }
 
 /**
@@ -95,5 +119,32 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
     va_end(args);
 
-    return true;
+    /*Redirects the stdout stream to file*/
+    freopen(outputfile, "w", stdout);
+
+    int return_status=false;
+    int status=0;
+    pid_t pid=fork();
+    if(pid==-1)
+      return false;
+    else if(pid==0){
+      return_status= execv(command[0], command);
+      /*The child process will return 0 in case of the success execution*/
+      if(return_status==-1)
+	exit(EXIT_FAILURE);
+    }
+    va_end(args);
+
+    waitpid(pid, &status, 0); /*Wait for the child process to finish*/
+
+    if(WIFEXITED(status))
+      return_status = WEXITSTATUS(status);
+
+    
+    /*For success the return_status=EXIT_SUCCESS=0
+     *Since we need to return true, in case of EXIT_SUCCESS and vice versa,
+     *So we have to logical inverse of the return status 
+     */
+    return !return_status;
+   
 }
