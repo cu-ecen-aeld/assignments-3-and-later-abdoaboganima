@@ -81,8 +81,9 @@ else
 fi
 
 # TODO: Make and install busybox
-make ARCH=arm64 CONFIG_PREFIX=${OUTDIR}/rootfs CROSS_COMPILE=arm-unknown-linux-gnueabi- install
-cp ${OUTDIR}/busybox/busybox ${OUTDIR}/rootfs/bin/
+PATH=$PATH:/tmp/arm-unknown-linux-gnueabi/bin
+sudo make ARCH=arm CONFIG_PREFIX=${OUTDIR}/rootfs CROSS_COMPILE=arm-unknown-linux-gnueabi- install
+sudo cp ${OUTDIR}/busybox/busybox ${OUTDIR}/rootfs/bin/
 echo "Library dependencies"
 arm-unknown-linux-gnueabi-readelf -a $OUTDIR/rootfs/bin/busybox | grep "program interpreter"
 arm-unknown-linux-gnueabi-readelf -a $OUTDIR/rootfs/bin/busybox | grep "Shared library"
@@ -90,10 +91,10 @@ arm-unknown-linux-gnueabi-readelf -a $OUTDIR/rootfs/bin/busybox | grep "Shared l
 # TODO: Add library dependencies to rootfs
 SYSROOT=`arm-unknown-linux-gnueabi-gcc -print-sysroot`
 echo "The sysroot is ${SYSROOT}"
-cp ${SYSROOT}/lib/ld-linux.so.3 ${OUTDIR}/rootfs/lib
-cp ${SYSROOT}/lib/libm.so.6 ${OUTDIR}/rootfs/lib
-cp ${SYSROOT}/lib/libresolv.so.2 ${OUTDIR}/rootfs/lib
-cp ${SYSROOT}/lib/libc.so.6 ${OUTDIR}/rootfs/lib
+sudo cp ${SYSROOT}/lib/ld-linux.so.3 ${OUTDIR}/rootfs/lib
+sudo cp ${SYSROOT}/lib/libm.so.6 ${OUTDIR}/rootfs/lib
+sudo cp ${SYSROOT}/lib/libresolv.so.2 ${OUTDIR}/rootfs/lib
+sudo cp ${SYSROOT}/lib/libc.so.6 ${OUTDIR}/rootfs/lib
 
 echo "The shared libraries have been copied"
 
