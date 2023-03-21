@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 
 
@@ -16,6 +16,6 @@ fi
 
 
 matchingLines=$(grep $2 -r $1 | wc -l)
-numOfFiles=$(ls -1q $1 | wc -l)
+numOfFiles=$(ls -1 $1 | wc -l)
 
 echo "The number of files are $numOfFiles and the number of matching lines are $matchingLines"

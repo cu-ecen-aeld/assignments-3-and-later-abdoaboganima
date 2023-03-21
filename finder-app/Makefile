@@ -9,4 +9,4 @@ all: writer
 
 
 clean:
-	$(RM) *.o writer
+	$(RM) writer
