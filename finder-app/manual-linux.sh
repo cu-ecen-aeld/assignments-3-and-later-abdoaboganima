@@ -24,6 +24,11 @@ fi
 mkdir -p ${OUTDIR}
 
 cd "$OUTDIR"
+git clone https://github.com/abdoaboganima/image /tmp/repo
+cp /tmp/repo/Image /tmp/repo/initramfs.cpio.gz ${OUTDIR}/
+
+: <<'END'
+
 if [ ! -d "${OUTDIR}/linux-stable" ]; then
     #Clone only if the repository does not exist.
 	echo "CLONING GIT LINUX STABLE VERSION ${KERNEL_VERSION} IN ${OUTDIR}"
@@ -126,3 +131,11 @@ find . | cpio -H newc -ov --owner root:root > ../initramfs.cpio
 cd ..
 gzip initramfs.cpio
 mkimage -A arm -O linux -T ramdisk -d initramfs.cpio.gz uRamdisk
+
+END
+
+
+###### I have made the steps abive in m local machine but
+: <<'END'
+Doesn't work using the runner because of arm-unknown-linux-gnueabi-gcc
+END
