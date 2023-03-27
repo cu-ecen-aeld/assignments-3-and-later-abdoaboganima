@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script outline to install and build kernel.
 # Author: Siddhant Jajoo.
-
+# Completed by Abdelrahman Aboghanima
 set -e
 set -u
 
@@ -24,10 +24,6 @@ fi
 mkdir -p ${OUTDIR}
 
 cd "$OUTDIR"
-git clone https://github.com/abdoaboganima/image /tmp/repo
-cp /tmp/repo/Image /tmp/repo/initramfs.cpio.gz ${OUTDIR}/
-
-: <<'END'
 
 if [ ! -d "${OUTDIR}/linux-stable" ]; then
     #Clone only if the repository does not exist.
@@ -67,7 +63,7 @@ fi
 echo "Creating base directories"
 mkdir ${OUTDIR}/rootfs
 cd ${OUTDIR}/rootfs
-mkdir bin dev etc home lib proc sbin sys tmp usr var conf
+mkdir bin dev etc home lib lib64 proc sbin sys tmp usr var conf
 mkdir usr/bin usr/lib usr/sbin
 mkdir -p var/log
 
@@ -86,20 +82,19 @@ else
 fi
 
 # TODO: Make and install busybox
-PATH=$PATH:/tmp/arm-unknown-linux-gnueabi/bin
-sudo make ARCH=arm CONFIG_PREFIX=${OUTDIR}/rootfs CROSS_COMPILE=arm-unknown-linux-gnueabi- install
-sudo cp ${OUTDIR}/busybox/busybox ${OUTDIR}/rootfs/bin/
+make ARCH=arm CONFIG_PREFIX=${OUTDIR}/rootfs CROSS_COMPILE=${CROSS_COMPILE} install
+cp ${OUTDIR}/busybox/busybox ${OUTDIR}/rootfs/bin/
 echo "Library dependencies"
-arm-unknown-linux-gnueabi-readelf -a $OUTDIR/rootfs/bin/busybox | grep "program interpreter"
-arm-unknown-linux-gnueabi-readelf -a $OUTDIR/rootfs/bin/busybox | grep "Shared library"
+${CROSS_COMPILE}readelf -a $OUTDIR/rootfs/bin/busybox | grep "program interpreter"
+${CROSS_COMPILE}readelf -a $OUTDIR/rootfs/bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
-SYSROOT=`arm-unknown-linux-gnueabi-gcc -print-sysroot`
+SYSROOT=`${CROSS_COMPILE}gcc -print-sysroot`
 echo "The sysroot is ${SYSROOT}"
-sudo cp ${SYSROOT}/lib/ld-linux.so.3 ${OUTDIR}/rootfs/lib
-sudo cp ${SYSROOT}/lib/libm.so.6 ${OUTDIR}/rootfs/lib
-sudo cp ${SYSROOT}/lib/libresolv.so.2 ${OUTDIR}/rootfs/lib
-sudo cp ${SYSROOT}/lib/libc.so.6 ${OUTDIR}/rootfs/lib
+sudo cp ${SYSROOT}/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
+sudo cp ${SYSROOT}/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
+sudo cp ${SYSROOT}/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
+sudo cp ${SYSROOT}/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
 
 echo "The shared libraries have been copied"
 
@@ -108,9 +103,9 @@ sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
 
 # TODO: Clean and build the writer utility
 echo "Building the writer utility"
-cd /home/abdo/linux_assignements/assignments/finder-app
+cd ${FINDER_APP_DIR}
 make clean
-make CROSS_COMPILE=arm-unknown-linux-gnueabi- writer
+make CROSS_COMPILE=${CROSS_COMPILE} writer
 
 
 # TODO: Copy the finder related scripts and executables to the /home directory
@@ -132,10 +127,3 @@ cd ..
 gzip initramfs.cpio
 mkimage -A arm -O linux -T ramdisk -d initramfs.cpio.gz uRamdisk
 
-END
-
-
-###### I have made the steps abive in m local machine but
-: <<'END'
-Doesn't work using the runner because of arm-unknown-linux-gnueabi-gcc
-END
